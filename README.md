@@ -1,5 +1,4 @@
-teste
-linha 2# Central de Obrigações: plugin para Claude Cowork
+# Central de Obrigações: plugin para Claude Cowork
 
 Controle de obrigações acessórias com agenda por competência, radar de prazos, envio de guias por Gmail com protocolo e registro da ciência do cliente.
 

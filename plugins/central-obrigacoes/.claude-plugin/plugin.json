@@ -1,0 +1,9 @@
+{
+  "name": "central-obrigacoes",
+  "version": "1.0.0",
+  "description": "Controle de obrigações acessórias: agenda por competência, radar de prazos, envio de guias por Gmail com protocolo e registro da ciência do cliente, num painel on-line próprio de cada escritório.",
+  "author": {
+    "name": "Fernando Reis"
+  },
+  "keywords": ["contabilidade", "obrigacoes-acessorias", "guias", "protocolo", "das", "dctfweb"]
+}

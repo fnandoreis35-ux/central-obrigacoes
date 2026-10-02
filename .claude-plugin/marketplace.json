@@ -1,0 +1,17 @@
+{
+  "name": "fernando-contabil",
+  "owner": {
+    "name": "Fernando Reis"
+  },
+  "metadata": {
+    "description": "Automações contábeis do Fernando para Claude Cowork."
+  },
+  "plugins": [
+    {
+      "name": "central-obrigacoes",
+      "source": "./plugins/central-obrigacoes",
+      "description": "Agenda de obrigações acessórias, envio de guias com protocolo e ciência do cliente.",
+      "version": "1.0.0"
+    }
+  ]
+}
