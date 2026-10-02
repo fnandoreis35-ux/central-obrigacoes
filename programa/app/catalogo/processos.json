@@ -1,0 +1,32 @@
+{
+ "p-decl": {
+  "etapas": [
+   "Conferir informações",
+   "Gerar arquivo",
+   "Validar",
+   "Transmitir",
+   "Arquivar recibo"
+  ],
+  "nome": "Declaração"
+ },
+ "p-folha": {
+  "etapas": [
+   "Receber variáveis do cliente",
+   "Processar folha",
+   "Conferir",
+   "Fechar eSocial (S-1299)",
+   "Enviar holerites ao cliente"
+  ],
+  "nome": "Folha e encargos"
+ },
+ "p-guia": {
+  "etapas": [
+   "Conferir movimento do mês",
+   "Apurar imposto",
+   "Emitir guia",
+   "Conferir guia",
+   "Enviar ao cliente"
+  ],
+  "nome": "Guia de pagamento"
+ }
+}

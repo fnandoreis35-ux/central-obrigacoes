@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Central de Obrigações</title>
+<meta name="central-obrigacoes-versao" content="1.0.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: barra lateral de navegação + área de trabalho com faixa de indicadores e tabela densa; gaveta à direita para detalhes */
+:root{
+  --bg:#f3f5f8; --surface:#ffffff; --surface-2:#eaeef4; --line:#d6dce6;
+  --ink:#16202e; --ink-2:#4a5669; --ink-3:#7a8597;
+  --accent:#2446a8; --accent-soft:#e3e9fb; --accent-ink:#ffffff;
+  --ok:#1d7a4b; --ok-soft:#dcf1e5; --warn:#a15c00; --warn-soft:#fbecd3;
+  --bad:#b3261e; --bad-soft:#fbe0de; --info:#5b3fa8; --info-soft:#ece6fa;
+  --muted-soft:#e7eaef;
+  --f-display:"Fraunces", Georgia, serif;
+  --f-body:"Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0f141c; --surface:#161d28; --surface-2:#1d2633; --line:#2a3544;
+    --ink:#e6ebf2; --ink-2:#a9b4c4; --ink-3:#7c8799;
+    --accent:#7d9bf2; --accent-soft:#1f2c4d; --accent-ink:#0f141c;
+    --ok:#5fcf93; --ok-soft:#173526; --warn:#f0b35a; --warn-soft:#3a2c14;
+    --bad:#f08a82; --bad-soft:#3d1c1a; --info:#b8a3f5; --info-soft:#2a2244;
+    --muted-soft:#222b37;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0f141c; --surface:#161d28; --surface-2:#1d2633; --line:#2a3544;
+  --ink:#e6ebf2; --ink-2:#a9b4c4; --ink-3:#7c8799;
+  --accent:#7d9bf2; --accent-soft:#1f2c4d; --accent-ink:#0f141c;
+  --ok:#5fcf93; --ok-soft:#173526; --warn:#f0b35a; --warn-soft:#3a2c14;
+  --bad:#f08a82; --bad-soft:#3d1c1a; --info:#b8a3f5; --info-soft:#2a2244;
+  --muted-soft:#222b37;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100%}
+nav.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:env(safe-area-inset-top,0px);height:100vh}
+.brand{font-family:var(--f-display);font-size:20px;line-height:1.1;padding:4px 10px 16px;letter-spacing:-.01em}
+.brand small{display:block;font-family:var(--f-body);font-size:11px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin-top:4px;font-weight:600}
+nav.side button{all:unset;cursor:pointer;padding:8px 10px;gap:10px;border-radius:6px;color:var(--ink-2);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+nav.side button:hover{background:var(--surface-2)}
+nav.side button[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav.side button:focus-visible{outline:2px solid var(--accent)}
+nav.side .count{font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.side .foot{margin-top:auto;font-size:12px;color:var(--ink-3);padding:10px}
+main{padding:24px 28px 60px;min-width:0;display:flex;flex-direction:column;gap:18px}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:600;font-size:26px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.sub{color:var(--ink-2);margin:2px 0 0}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:6px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--accent)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+input[type=text],input[type=email],input[type=number],input[type=date],input[type=month],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0}
+textarea{width:100%;resize:vertical}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.02em}
+label.f > input,label.f > select,label.f > textarea{font-weight:400;font-size:14px;color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:12px 14px;cursor:pointer;border:0;text-align:left}
+.kpi:hover{background:var(--surface-2)}
+.kpi .n{font-family:var(--f-mono);font-size:24px;font-weight:500;font-variant-numeric:tabular-nums;display:block}
+.kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);font-weight:600}
+.kpi.bad .n{color:var(--bad)} .kpi.warn .n{color:var(--warn)} .kpi.ok .n{color:var(--ok)} .kpi.info .n{color:var(--info)}
+.kpi[aria-pressed="true"]{box-shadow:inset 0 -3px 0 var(--accent)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.filters input[type=text]{width:220px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{all:unset;cursor:pointer;padding:6px 12px;font-size:13px;font-weight:500;color:var(--ink-2);background:var(--surface)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--surface-2)}
+tr.group td{background:var(--surface-2);font-size:12px;font-weight:600;color:var(--ink-2);padding:6px 12px;letter-spacing:.02em}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.muted{color:var(--ink-3)}
+.sigla{font-family:var(--f-mono);font-weight:500;font-size:12.5px;background:var(--muted-soft);padding:2px 6px;border-radius:4px;white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-pendente{background:var(--muted-soft);color:var(--ink-2)}
+.st-andamento{background:var(--accent-soft);color:var(--accent)}
+.st-concluida{background:var(--ok-soft);color:var(--ok)}
+.st-enviada{background:var(--info-soft);color:var(--info)}
+.st-ciente{background:var(--ok-soft);color:var(--ok)}
+.st-dispensada{background:var(--muted-soft);color:var(--ink-3)}
+.st-atrasada{background:var(--bad-soft);color:var(--bad)}
+.st-semresp{background:var(--warn-soft);color:var(--warn)}
+.stamp{font-family:var(--f-mono);font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid var(--ok);color:var(--ok);padding:2px 7px;border-radius:3px;transform:rotate(-2deg);display:inline-block}
+.bar{height:6px;background:var(--muted-soft);border-radius:3px;overflow:hidden;width:70px;display:inline-block;vertical-align:middle;margin-right:6px}
+.bar > i{display:block;height:100%;background:var(--accent)}
+.due{white-space:nowrap}
+.due.bad{color:var(--bad);font-weight:600}
+.due.warn{color:var(--warn);font-weight:600}
+.empty{padding:40px 24px;text-align:center;color:var(--ink-2)}
+.empty h3{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0 0 6px;color:var(--ink)}
+.empty p{max-width:52ch;margin:0 auto 14px}
+/* matriz */
+.matrix td,.matrix th{padding:6px 8px;text-align:center}
+.matrix td:first-child,.matrix th:first-child{text-align:left;position:sticky;left:0;background:var(--surface);z-index:1;min-width:200px}
+.cell{display:inline-block;width:22px;height:22px;border-radius:4px;cursor:pointer;border:0}
+.cell.pendente{background:var(--muted-soft);box-shadow:inset 0 0 0 1px var(--line)}
+.cell.andamento{background:var(--accent)}
+.cell.concluida{background:var(--ok)}
+.cell.enviada{background:var(--info)}
+.cell.ciente{background:var(--ok);box-shadow:inset 0 0 0 3px var(--ok-soft)}
+.cell.dispensada{background:transparent;box-shadow:inset 0 0 0 1px var(--line);background-image:linear-gradient(135deg,transparent 45%,var(--ink-3) 45%,var(--ink-3) 55%,transparent 55%)}
+.cell.atrasada{background:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2);padding:10px 12px;border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend .cell{width:14px;height:14px;cursor:default}
+/* gaveta e modal */
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.38);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:21;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer header{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.drawer h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0}
+.drawer .body{padding:18px 20px;overflow:auto;display:flex;flex-direction:column;gap:16px;flex:1}
+.drawer footer{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(720px,calc(100% - 32px));max-height:calc(100% - 48px);background:var(--surface);border:1px solid var(--line);border-radius:10px;z-index:21;display:flex;flex-direction:column}
+.modal header{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal h2{font-family:var(--f-display);font-weight:600;font-size:19px;margin:0}
+.modal .body{padding:18px 20px;overflow:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.modal .body .full{grid-column:1 / -1}
+.modal footer{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap}
+.x{all:unset;cursor:pointer;font-size:20px;line-height:1;color:var(--ink-3);padding:2px 6px;border-radius:4px}
+.x:hover{background:var(--surface-2)}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks label{display:flex;gap:10px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.checks label.done span{text-decoration:line-through;color:var(--ink-3)}
+.chipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px}
+.chipgrid label{display:flex;gap:8px;align-items:center;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;cursor:pointer}
+.chipgrid label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0}
+.sectionlabel{font-size:11px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;color:var(--ink-3);margin:0 0 6px}
+.protocol{border:1px dashed var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.protocol .code{font-family:var(--f-mono);font-size:13px;font-weight:500}
+blockquote.resp{margin:0;padding:8px 10px;border-left:3px solid var(--ok);background:var(--surface-2);font-size:13px;color:var(--ink-2)}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:40;font-weight:500;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.proc{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.proc .panel{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.proc h3{margin:0;font-size:15px}
+.proc ol{margin:0;padding-left:20px;color:var(--ink-2)}
+.cfg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding:18px}
+.cfg .full{grid-column:1/-1}
+.hint{font-size:12px;color:var(--ink-3);font-weight:400}
+.offline{background:var(--warn-soft);color:var(--warn);padding:10px 14px;border-radius:8px;font-weight:500}
+@media (max-width:900px){
+  .app{grid-template-columns:1fr}
+  nav.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:10px 16px;border-right:0;border-bottom:1px solid var(--line)}
+  .brand{width:100%;padding-bottom:6px}
+  .side .foot{display:none}
+  main{padding:18px 16px 48px}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .modal .body,.cfg{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+<style>body{margin:0}body.sem-conexao::before{content:"Sem conexão com o programa. Ele foi fechado?";position:fixed;top:0;left:0;right:0;z-index:99;background:#b3261e;color:#fff;padding:6px 12px;font-weight:600}</style>
+</head><body>
+<div class="app"><nav class="side" id="nav" aria-label="Seções"></nav><main id="main"></main></div><div id="overlay"></div>
+<script src="/web/banco-local.js"></script>
+<script>
+// ===== Regras de vencimento (compartilhadas pelo painel e pela skill) =====
+const Venc = (() => {
+  const pad = n => String(n).padStart(2, "0");
+  const iso = d => d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate());
+  const mk = (y, m, d) => new Date(Date.UTC(y, m - 1, d)); // m 1-12, aceita overflow
+  const lastDay = (y, m) => mk(y, m + 1, 0).getUTCDate();
+  function isUtil(d, fer) { const w = d.getUTCDay(); return w !== 0 && w !== 6 && !fer.has(iso(d)); }
+  function shift(d, n) { return new Date(d.getTime() + n * 86400000); }
+  // competência "AAAA-MM" -> se a obrigação se aplica e qual o vencimento ISO
+  function aplica(ob, comp) {
+    const m = +comp.slice(5, 7);
+    if (ob.periodicidade === "trimestral") return m % 3 === 0;
+    if (ob.periodicidade === "anual") return m === (+ob.mesBase || 12);
+    return true;
+  }
+  function calcular(ob, comp, feriados) {
+    if (!aplica(ob, comp)) return null;
+    const fer = new Set(feriados || []);
+    const y0 = +comp.slice(0, 4), m0 = +comp.slice(5, 7);
+    const alvo = mk(y0, m0 + (+ob.mesOffset || 0), 1);
+    const y = alvo.getUTCFullYear(), m = alvo.getUTCMonth() + 1;
+    let d;
+    if (ob.regra === "ultimo_util") {
+      d = mk(y, m, lastDay(y, m));
+      while (!isUtil(d, fer)) d = shift(d, -1);
+      return iso(d);
+    }
+    if (ob.regra === "dia_util") {
+      let n = 0; d = mk(y, m, 1);
+      while (true) { if (isUtil(d, fer) && ++n >= (+ob.dia || 1)) break; d = shift(d, 1); }
+      return iso(d);
+    }
+    d = mk(y, m, Math.min(+ob.dia || 1, lastDay(y, m)));
+    if (ob.ajuste === "antecipa") while (!isUtil(d, fer)) d = shift(d, -1);
+    else if (ob.ajuste === "posterga") while (!isUtil(d, fer)) d = shift(d, 1);
+    return iso(d);
+  }
+  return { calcular, aplica, iso };
+})();
+if (typeof module !== "undefined") module.exports = Venc;
+</script><script>
+// ===== Central de Obrigações =====
+const PAINEL_VERSAO = "1.0.0";
+const pad = n => String(n).padStart(2, "0");
+const h = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const hoje = (() => { const d = new Date(); return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); })();
+const addDias = (isoD, n) => { const d = new Date(isoD + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const diasEntre = (a, b) => Math.round((new Date(b + "T12:00:00Z") - new Date(a + "T12:00:00Z")) / 86400000);
+const br = isoD => isoD ? isoD.slice(8, 10) + "/" + isoD.slice(5, 7) + "/" + isoD.slice(0, 4) : "";
+const brDH = s => { if (!s) return ""; const d = new Date(s); return isNaN(d) ? s : d.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }); };
+const compBR = c => c ? c.slice(5, 7) + "/" + c.slice(0, 4) : "";
+const WD = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const wd = isoD => WD[new Date(isoD + "T12:00:00Z").getUTCDay()];
+const fmtCNPJ = v => { const d = String(v || "").replace(/\D/g, ""); if (d.length === 14) return d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5"); if (d.length === 11) return d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4"); return v || ""; };
+const money = v => (v === "" || v == null || isNaN(+v)) ? "" : (+v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const prevComp = () => { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return d.getFullYear() + "-" + pad(d.getMonth() + 1); };
+
+const STATUS = {
+  pendente: "Pendente", andamento: "Em andamento", concluida: "Concluída", enviada: "Enviada ao cliente",
+  ciente: "Cliente ciente", dispensada: "Dispensada", atrasada: "Atrasada"
+};
+const REGIMES = ["Simples Nacional", "MEI", "Lucro Presumido", "Lucro Real", "Imune/Isenta", "Pessoa Física"];
+const ESFERAS = ["Federal", "Estadual", "Municipal", "Trabalhista", "Interna"];
+
+const S = {
+  db: null, offline: false, loaded: { clientes: false, obrigacoes: false, processos: false, tarefas: false, cfg: false },
+  clientes: [], obrig: [], proc: [], tarefas: [], cfg: {},
+  view: "agenda", comp: prevComp(), mode: "lista", kpi: null,
+  f: { q: "", resp: "", esfera: "", status: "" }, protoF: "abertos", overlay: null
+};
+const byId = (arr, id) => arr.find(x => x.id === id);
+const feriados = () => S.cfg.feriados || [];
+
+// ---------- status derivados ----------
+function effStatus(it) {
+  if ((it.status === "pendente" || it.status === "andamento") && it.venc && it.venc < hoje) return "atrasada";
+  return it.status || "pendente";
+}
+function envioStatus(e) {
+  if (e.status === "ciente") return "ciente";
+  const dias = e.enviadoEm ? diasEntre(e.enviadoEm.slice(0, 10), hoje) : 0;
+  return dias > (+S.cfg.diasCobranca || 3) ? "semresp" : "aguardando";
+}
+function pill(st) {
+  const cls = { aguardando: "st-enviada", semresp: "st-semresp" }[st] || "st-" + st;
+  const lbl = { aguardando: "Aguardando ciência", semresp: "Sem resposta" }[st] || STATUS[st] || st;
+  return `<span class="pill ${cls}">${h(lbl)}</span>`;
+}
+function regraTexto(ob) {
+  const off = +ob.mesOffset || 0;
+  const mes = off === 0 ? "do próprio mês" : off === 1 ? "do mês seguinte" : `do ${off}º mês seguinte`;
+  let t;
+  if (ob.regra === "ultimo_util") t = `Último dia útil ${mes}`;
+  else if (ob.regra === "dia_util") t = `${ob.dia}º dia útil ${mes}`;
+  else t = `Dia ${ob.dia} ${mes}` + (ob.ajuste === "antecipa" ? ", antecipa" : ob.ajuste === "posterga" ? ", prorroga" : "");
+  const per = ob.periodicidade === "trimestral" ? " (trimestral)" : ob.periodicidade === "anual" ? ` (anual, base ${pad(ob.mesBase || 12)})` : "";
+  return t + per;
+}
+
+// ---------- linhas da agenda ----------
+function linhas(comp) {
+  const out = [];
+  for (const t of S.tarefas) {
+    if (comp && t.competencia !== comp) continue;
+    const c = byId(S.clientes, t.clienteId) || { id: t.clienteId, nome: t.clienteNome || "(cliente removido)" };
+    for (const [obId, it] of Object.entries(t.itens || {})) {
+      const ob = byId(S.obrig, obId) || { id: obId, sigla: obId, nome: obId, esfera: "" };
+      out.push({ t, c, ob, it, st: effStatus(it) });
+    }
+  }
+  return out;
+}
+function envios(comp) {
+  const out = [];
+  for (const t of S.tarefas) {
+    if (comp && t.competencia !== comp) continue;
+    const c = byId(S.clientes, t.clienteId) || { nome: t.clienteNome || "(cliente removido)" };
+    (t.envios || []).forEach((e, i) => out.push({ t, c, e, i, st: envioStatus(e) }));
+  }
+  return out.sort((a, b) => (b.e.enviadoEm || "").localeCompare(a.e.enviadoEm || ""));
+}
+function aplicaFiltros(rows) {
+  const q = S.f.q.trim().toLowerCase();
+  return rows.filter(r => {
+    if (S.f.resp && (r.it.resp || r.c.resp || "") !== S.f.resp) return false;
+    if (S.f.esfera && r.ob.esfera !== S.f.esfera) return false;
+    if (S.f.status && r.st !== S.f.status) return false;
+    if (q && !(`${r.c.nome} ${r.c.cnpj || ""} ${r.ob.sigla} ${r.ob.nome}`.toLowerCase().includes(q) || String(r.c.cnpj || "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "§"))) return false;
+    if (S.kpi === "atrasadas" && r.st !== "atrasada") return false;
+    if (S.kpi === "semana" && !(["pendente", "andamento"].includes(r.st) && r.it.venc >= hoje && r.it.venc <= addDias(hoje, 7))) return false;
+    if (S.kpi === "abertas" && !["pendente", "andamento", "atrasada"].includes(r.st)) return false;
+    if (S.kpi === "feitas" && !["concluida", "enviada", "ciente", "dispensada"].includes(r.st)) return false;
+    return true;
+  });
+}
+
+// ---------- render ----------
+const $main = () => document.getElementById("main");
+function render() {
+  renderNav();
+  const v = S.view;
+  let html = S.offline ? `<div class="offline">Não foi possível abrir o banco de dados do programa.</div>` : "";
+  html += v === "agenda" ? viewAgenda() : v === "protocolos" ? viewProtocolos() : v === "clientes" ? viewClientes()
+    : v === "obrigacoes" ? viewObrig() : v === "processos" ? viewProc() : v === "guias" ? viewGuias() : viewCfg();
+  $main().innerHTML = html;
+  S.cfgRendered = v === "config" && S.loaded.cfg;
+  renderOverlay();
+}
+function renderNav() {
+  const rows = linhas(S.comp);
+  const atras = linhas(null).filter(r => r.st === "atrasada").length;
+  const aguard = envios(null).filter(x => x.st !== "ciente").length;
+  const items = [
+    ["agenda", "Agenda", atras ? `${atras} atras.` : ""], ["guias", "Enviar guias", ""], ["protocolos", "Protocolos", aguard || ""],
+    ["clientes", "Clientes", S.clientes.length || ""], ["obrigacoes", "Obrigações", S.obrig.length || ""],
+    ["processos", "Processos", S.proc.length || ""], ["config", "Configurações", ""]
+  ];
+  document.getElementById("nav").innerHTML =
+    `<div class="brand">${h(S.cfg.nome || "Central de Obrigações")}<small>Obrigações acessórias</small></div>` +
+    items.map(([k, l, c]) => `<button data-act="nav" data-v="${k}" ${S.view === k ? 'aria-current="page"' : ""}><span>${l}</span><span class="count">${h(c)}</span></button>`).join("") +
+    `<div class="foot">Hoje, ${wd(hoje)} ${br(hoje)}<br>${rows.length} tarefas em ${compBR(S.comp)}<br><span class="mono" style="font-size:10px">painel v${PAINEL_VERSAO}</span></div>`;
+}
+function compOptions() {
+  const set = new Set(S.tarefas.map(t => t.competencia)); set.add(S.comp); set.add(prevComp());
+  return [...set].sort().reverse().map(c => `<option value="${c}" ${c === S.comp ? "selected" : ""}>${compBR(c)}</option>`).join("");
+}
+function loading() { return !S.offline && !(S.loaded.tarefas && S.loaded.clientes && S.loaded.obrigacoes); }
+
+function viewAgenda() {
+  const all = linhas(S.comp);
+  const envs = envios(S.comp);
+  const k = {
+    atrasadas: all.filter(r => r.st === "atrasada").length,
+    semana: all.filter(r => ["pendente", "andamento"].includes(r.st) && r.it.venc >= hoje && r.it.venc <= addDias(hoje, 7)).length,
+    abertas: all.filter(r => ["pendente", "andamento", "atrasada"].includes(r.st)).length,
+    feitas: all.filter(r => ["concluida", "enviada", "ciente", "dispensada"].includes(r.st)).length,
+    aguard: envs.filter(x => x.st !== "ciente").length, cientes: envs.filter(x => x.st === "ciente").length
+  };
+  const kp = (id, n, l, cls) => `<button class="kpi ${cls}" data-act="kpi" data-k="${id}" aria-pressed="${S.kpi === id}"><span class="n">${n}</span><span class="l">${l}</span></button>`;
+  const resps = [...new Set([...(S.cfg.responsaveis || []), ...S.clientes.map(c => c.resp).filter(Boolean)])];
+  let html = `<header class="top"><div><h1>Agenda da competência ${compBR(S.comp)}</h1><p class="sub">Prazos, etapas e entregas de cada cliente.</p></div>
+  <div class="toolbar"><label class="f">Competência<select id="f-comp" data-act="comp">${compOptions()}</select></label>
+  <label class="f">&nbsp;<input type="month" id="f-newcomp" value="${S.comp}" data-act="newcomp" title="Escolher outra competência"></label>
+  <button class="btn primary" data-act="gerar">Gerar tarefas de ${compBR(S.comp)}</button></div></header>
+  <div class="kpis">${kp("atrasadas", k.atrasadas, "Atrasadas", "bad")}${kp("semana", k.semana, "Vencem em 7 dias", "warn")}${kp("abertas", k.abertas, "Em aberto", "")}${kp("feitas", k.feitas, "Concluídas", "ok")}${kp("aguard", k.aguard, "Aguardando ciência", "info")}${kp("cientes", k.cientes, "Clientes cientes", "ok")}</div>
+  <div class="filters"><input type="text" id="f-q" placeholder="Buscar cliente, CNPJ ou obrigação" value="${h(S.f.q)}" data-act="fq">
+  <select id="f-resp" data-act="fresp"><option value="">Todos os responsáveis</option>${resps.map(r => `<option ${S.f.resp === r ? "selected" : ""}>${h(r)}</option>`).join("")}</select>
+  <select id="f-esf" data-act="fesf"><option value="">Todas as esferas</option>${ESFERAS.map(e => `<option ${S.f.esfera === e ? "selected" : ""}>${e}</option>`).join("")}</select>
+  <select id="f-st" data-act="fst"><option value="">Todos os status</option>${Object.entries(STATUS).map(([v, l]) => `<option value="${v}" ${S.f.status === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+  <span class="seg" style="margin-left:auto"><button data-act="mode" data-m="lista" aria-pressed="${S.mode === "lista"}">Lista</button><button data-act="mode" data-m="matriz" aria-pressed="${S.mode === "matriz"}">Matriz</button></span></div>`;
+  if (loading()) return html + `<div class="panel empty"><p>Carregando dados do painel…</p></div>`;
+  if (!all.length) {
+    const semBase = !S.clientes.length ? `Cadastre os clientes e marque as obrigações de cada um em <b>Clientes</b>. Depois gere as tarefas da competência.` : `Clique em <b>Gerar tarefas de ${compBR(S.comp)}</b> para criar a agenda com os vencimentos de cada cliente, calculados pelas regras do catálogo e pelos feriados cadastrados.`;
+    return html + `<div class="panel empty"><h3>Nenhuma tarefa em ${compBR(S.comp)}</h3><p>${semBase}</p>${S.clientes.length ? `<button class="btn primary" data-act="gerar">Gerar tarefas</button>` : `<button class="btn primary" data-act="nav" data-v="clientes">Ir para Clientes</button>`}</div>`;
+  }
+  const rows = aplicaFiltros(all);
+  return html + (S.mode === "matriz" ? matriz(rows) : lista(rows));
+}
+function lista(rows) {
+  if (!rows.length) return `<div class="panel empty"><p>Nenhuma tarefa com esses filtros.</p><button class="btn" data-act="limpar">Limpar filtros</button></div>`;
+  rows.sort((a, b) => (a.it.venc || "9").localeCompare(b.it.venc || "9") || a.c.nome.localeCompare(b.c.nome));
+  let last = null, body = "";
+  for (const r of rows) {
+    if (r.it.venc !== last) {
+      last = r.it.venc; const d = diasEntre(hoje, last);
+      const rel = d === 0 ? "hoje" : d === 1 ? "amanhã" : d < 0 ? `há ${-d} dia${d === -1 ? "" : "s"}` : `em ${d} dias`;
+      body += `<tr class="group"><td colspan="7">Vence ${wd(last)}, ${br(last)} · ${rel}</td></tr>`;
+    }
+    const et = r.it.etapas || [], done = et.filter(e => e.ok).length;
+    const dcls = r.st === "atrasada" ? "bad" : (["pendente", "andamento"].includes(r.st) && r.it.venc <= addDias(hoje, 3)) ? "warn" : "";
+    body += `<tr class="click" data-act="item" data-t="${h(r.t.id)}" data-o="${h(r.ob.id)}">
+      <td><b>${h(r.c.nome)}</b><div class="mono muted">${h(fmtCNPJ(r.c.cnpj))}</div></td>
+      <td><span class="sigla">${h(r.ob.sigla)}</span> <span class="muted">${h(r.ob.nome)}</span></td>
+      <td class="due ${dcls} mono">${br(r.it.venc)}</td>
+      <td>${h(r.it.resp || r.c.resp || "—")}</td>
+      <td>${et.length ? `<span class="bar"><i style="width:${Math.round(done / et.length * 100)}%"></i></span><span class="mono muted">${done}/${et.length}</span>` : `<span class="muted">—</span>`}</td>
+      <td class="mono">${money(r.it.valor)}</td>
+      <td>${pill(r.st)}</td></tr>`;
+  }
+  return `<div class="panel tablewrap"><table><thead><tr><th>Cliente</th><th>Obrigação</th><th>Vencimento</th><th>Responsável</th><th>Etapas</th><th>Valor</th><th>Status</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function matriz(rows) {
+  if (!rows.length) return `<div class="panel empty"><p>Nenhuma tarefa com esses filtros.</p></div>`;
+  const obs = [...new Map(rows.map(r => [r.ob.id, r.ob])).values()].sort((a, b) => a.sigla.localeCompare(b.sigla));
+  const cls = [...new Map(rows.map(r => [r.t.id, r])).values()].sort((a, b) => a.c.nome.localeCompare(b.c.nome));
+  const map = new Map(rows.map(r => [r.t.id + "|" + r.ob.id, r]));
+  const head = `<tr><th>Cliente</th>${obs.map(o => `<th title="${h(o.nome)}">${h(o.sigla)}</th>`).join("")}<th>Feito</th></tr>`;
+  const body = cls.map(cr => {
+    let tot = 0, ok = 0;
+    const cells = obs.map(o => {
+      const r = map.get(cr.t.id + "|" + o.id); if (!r) return `<td></td>`;
+      tot++; if (["concluida", "enviada", "ciente", "dispensada"].includes(r.st)) ok++;
+      return `<td><button class="cell ${r.st}" data-act="item" data-t="${h(r.t.id)}" data-o="${h(o.id)}" title="${h(o.sigla)} · ${STATUS[r.st]} · vence ${br(r.it.venc)}" aria-label="${h(cr.c.nome)} ${h(o.sigla)}: ${STATUS[r.st]}"></button></td>`;
+    }).join("");
+    return `<tr><td><b>${h(cr.c.nome)}</b></td>${cells}<td class="mono">${ok}/${tot}</td></tr>`;
+  }).join("");
+  const lg = ["pendente", "andamento", "atrasada", "concluida", "enviada", "ciente", "dispensada"].map(s => `<span><i class="cell ${s}"></i>${STATUS[s]}</span>`).join("");
+  return `<div class="panel"><div class="tablewrap"><table class="matrix"><thead>${head}</thead><tbody>${body}</tbody></table></div><div class="legend">${lg}</div></div>`;
+}
+
+function viewProtocolos() {
+  let list = envios(null);
+  const n = { abertos: list.filter(x => x.st !== "ciente").length, semresp: list.filter(x => x.st === "semresp").length, cientes: list.filter(x => x.st === "ciente").length, todos: list.length };
+  if (S.protoF === "abertos") list = list.filter(x => x.st !== "ciente");
+  else if (S.protoF === "semresp") list = list.filter(x => x.st === "semresp");
+  else if (S.protoF === "cientes") list = list.filter(x => x.st === "ciente");
+  const seg = [["abertos", "Aguardando"], ["semresp", "Sem resposta"], ["cientes", "Cientes"], ["todos", "Todos"]]
+    .map(([k, l]) => `<button data-act="pf" data-k="${k}" aria-pressed="${S.protoF === k}">${l} <span class="mono">${n[k]}</span></button>`).join("");
+  let html = `<header class="top"><div><h1>Protocolos de entrega</h1><p class="sub">Cada envio de guia gera um protocolo. O cliente dá ciência respondendo ao e-mail; o programa lê as respostas e registra aqui.</p></div></header>
+  <div class="filters"><span class="seg">${seg}</span><span class="hint">Sem resposta após ${+S.cfg.diasCobranca || 3} dias corridos entra em cobrança.</span></div>`;
+  if (loading()) return html + `<div class="panel empty"><p>Carregando…</p></div>`;
+  if (!list.length) return html + `<div class="panel empty"><h3>Nenhum protocolo aqui</h3><p>Os protocolos aparecem quando a skill envia as guias por e-mail. Use <b>Enviar guias</b> no menu.</p></div>`;
+  const body = list.map(x => {
+    const siglas = (x.e.itens || []).map(o => (byId(S.obrig, o) || { sigla: o }).sigla);
+    const dias = x.e.enviadoEm ? diasEntre(x.e.enviadoEm.slice(0, 10), hoje) : 0;
+    return `<tr class="click" data-act="proto" data-t="${h(x.t.id)}" data-i="${x.i}">
+    <td class="mono"><b>${h(x.e.protocolo)}</b></td><td><b>${h(x.c.nome)}</b><div class="muted mono">${compBR(x.t.competencia)}</div></td>
+    <td>${siglas.map(s => `<span class="sigla">${h(s)}</span>`).join(" ")}</td>
+    <td class="mono">${brDH(x.e.enviadoEm)}</td><td class="muted">${h((x.e.para || []).join(", "))}</td>
+    <td>${x.st === "ciente" ? `<span class="stamp">Ciente ${brDH(x.e.cienteEm).slice(0, 10)}</span>` : pill(x.st) + ` <span class="muted mono">${dias}d</span>`}</td></tr>`;
+  }).join("");
+  return html + `<div class="panel tablewrap"><table><thead><tr><th>Protocolo</th><th>Cliente</th><th>Guias</th><th>Enviado em</th><th>Para</th><th>Ciência</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function viewClientes() {
+  let html = `<header class="top"><div><h1>Clientes</h1><p class="sub">Carteira, e-mails de entrega e obrigações de cada empresa.</p></div>
+  <div class="toolbar"><button class="btn primary" data-act="cli-new">Novo cliente</button></div></header>`;
+  if (loading()) return html + `<div class="panel empty"><p>Carregando…</p></div>`;
+  if (!S.clientes.length) return html + `<div class="panel empty"><h3>Nenhum cliente cadastrado</h3><p>Cadastre aqui ou use <b>Importar planilha</b> com a carteira (nome, CNPJ, regime, e-mail, responsável).</p><button class="btn primary" data-act="cli-new">Cadastrar o primeiro cliente</button></div>`;
+  const rows = [...S.clientes].sort((a, b) => a.nome.localeCompare(b.nome)).map(c => `<tr class="click" data-act="cli-edit" data-id="${h(c.id)}">
+    <td><b>${h(c.nome)}</b>${c.ativo === false ? ` <span class="pill st-dispensada">Inativo</span>` : ""}</td><td class="mono">${h(fmtCNPJ(c.cnpj))}</td>
+    <td>${h(c.regime || "")}</td><td>${h(c.resp || "—")}</td><td class="muted">${h((c.emails || []).join(", ") || "sem e-mail")}</td>
+    <td class="mono">${(c.obrigacoes || []).length}</td></tr>`).join("");
+  return html + `<div class="panel tablewrap"><table><thead><tr><th>Cliente</th><th>CNPJ/CPF</th><th>Regime</th><th>Responsável</th><th>E-mails de entrega</th><th>Obrig.</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function viewObrig() {
+  let html = `<header class="top"><div><h1>Obrigações</h1><p class="sub">Catálogo com a regra de vencimento de cada obrigação. Ajuste ao calendário do seu estado e município.</p></div>
+  <div class="toolbar"><button class="btn primary" data-act="ob-new">Nova obrigação</button></div></header>`;
+  if (loading()) return html + `<div class="panel empty"><p>Carregando…</p></div>`;
+  if (!S.obrig.length) return html + `<div class="panel empty"><h3>Catálogo vazio</h3><p>Cadastre as obrigações que o escritório controla.</p><button class="btn primary" data-act="ob-new">Nova obrigação</button></div>`;
+  const rows = [...S.obrig].sort((a, b) => (a.esfera || "").localeCompare(b.esfera || "") || a.sigla.localeCompare(b.sigla)).map(o => {
+    const prox = Venc.calcular(o, S.comp, feriados());
+    return `<tr class="click" data-act="ob-edit" data-id="${h(o.id)}"><td><span class="sigla">${h(o.sigla)}</span></td><td>${h(o.nome)}</td><td>${h(o.esfera)}</td>
+    <td>${o.tipo === "guia" ? "Guia" : o.tipo === "declaracao" ? "Declaração" : "Rotina"}</td><td>${h(regraTexto(o))}</td>
+    <td class="mono">${prox ? br(prox) : `<span class="muted">não se aplica</span>`}</td><td>${o.enviaCliente ? "Sim" : "—"}</td>
+    <td class="muted">${h((byId(S.proc, o.processo) || {}).nome || "—")}</td></tr>`;
+  }).join("");
+  return html + `<div class="panel tablewrap"><table><thead><tr><th>Sigla</th><th>Nome</th><th>Esfera</th><th>Tipo</th><th>Regra de vencimento</th><th>Venc. comp. ${compBR(S.comp)}</th><th>Envia ao cliente</th><th>Processo</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function viewProc() {
+  let html = `<header class="top"><div><h1>Processos</h1><p class="sub">As etapas que cada obrigação percorre no escritório. Toda tarefa gerada recebe o checklist do processo da sua obrigação.</p></div>
+  <div class="toolbar"><button class="btn primary" data-act="pr-new">Novo processo</button></div></header>`;
+  if (loading()) return html + `<div class="panel empty"><p>Carregando…</p></div>`;
+  if (!S.proc.length) return html + `<div class="panel empty"><h3>Nenhum processo</h3><p>Crie um processo com as etapas do seu escritório, como conferir, apurar, emitir guia e enviar ao cliente.</p><button class="btn primary" data-act="pr-new">Novo processo</button></div>`;
+  return html + `<div class="proc">${S.proc.map(p => {
+    const usados = S.obrig.filter(o => o.processo === p.id).map(o => o.sigla);
+    return `<div class="panel"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><h3>${h(p.nome)}</h3><button class="btn small" data-act="pr-edit" data-id="${h(p.id)}">Editar</button></div>
+    <ol>${(p.etapas || []).map(e => `<li>${h(e)}</li>`).join("")}</ol><div class="hint">${usados.length ? "Usado em: " + usados.map(h).join(", ") : "Não usado por nenhuma obrigação"}</div></div>`;
+  }).join("")}</div>`;
+}
+
+function viewCfg() {
+  const c = S.cfg;
+  return `<header class="top"><div><h1>Configurações</h1><p class="sub">Dados do escritório, equipe, feriados e o modelo do e-mail de entrega.</p></div></header>
+  <form class="panel cfg" id="cfg-form" data-act="cfg-save">
+  <label class="f">Nome do escritório<input type="text" id="cfg-nome" value="${h(c.nome || "")}"></label>
+  <label class="f">Dias sem resposta para cobrar<input type="number" id="cfg-dias" min="1" max="30" value="${h(c.diasCobranca || 3)}"></label>
+  <label class="f">Responsáveis (um por linha)<textarea id="cfg-resp" rows="5">${h((c.responsaveis || []).join("\n"))}</textarea></label>
+  <label class="f">Feriados (um por linha, AAAA-MM-DD ou DD/MM/AAAA)<textarea id="cfg-fer" rows="5" class="mono">${h((c.feriados || []).map(br).join("\n"))}</textarea><span class="hint">Inclua os feriados estaduais e municipais da sua cidade. Eles mudam os vencimentos.</span></label>
+  <label class="f full">Assunto do e-mail de entrega<input type="text" id="cfg-assunto" value="${h(c.modeloAssunto || "")}"></label>
+  <label class="f full">Corpo do e-mail de entrega<textarea id="cfg-corpo" rows="9">${h(c.modeloCorpo || "")}</textarea><span class="hint">Campos: {cliente} {cnpj} {competencia} {guias} {protocolo} {escritorio}. {guias} vira a lista com obrigação, vencimento e valor.</span></label>
+  <label class="f full">Assinatura<textarea id="cfg-ass" rows="3">${h(c.assinatura || "")}</textarea></label>
+  <div class="full"><button class="btn primary" type="submit">Salvar configurações</button></div></form>`;
+}
+
+// ---------- overlays ----------
+function renderOverlay() {
+  const el = document.getElementById("overlay");
+  const o = S.overlay;
+  if (!o) { el.innerHTML = ""; return; }
+  if (o.kind === "item") el.innerHTML = drawerItem(o);
+  else if (o.kind === "proto") el.innerHTML = drawerProto(o);
+  else if (o.kind === "cli") el.innerHTML = modalCli(o);
+  else if (o.kind === "ob") el.innerHTML = modalOb(o);
+  else if (o.kind === "pr") el.innerHTML = modalPr(o);
+  else if (o.kind === "gerar") el.innerHTML = modalGerar(o);
+}
+function drawerItem(o) {
+  const t = byId(S.tarefas, o.t); if (!t) return "";
+  const it = o.draft, ob = byId(S.obrig, o.o) || { sigla: o.o, nome: "" }, c = byId(S.clientes, t.clienteId) || { nome: t.clienteNome || "" };
+  const resps = [...new Set([...(S.cfg.responsaveis || []), c.resp, it.resp].filter(Boolean))];
+  const envs = (t.envios || []).map((e, i) => ({ e, i })).filter(x => (x.e.itens || []).includes(o.o));
+  return `<div class="scrim" data-act="close"></div><aside class="drawer" role="dialog" aria-label="Tarefa">
+  <header><div><div class="sectionlabel">${h(c.nome)} · ${compBR(t.competencia)}</div><h2><span class="sigla">${h(ob.sigla)}</span> ${h(ob.nome)}</h2></div><button class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body">
+  <dl class="kv"><dt>Vencimento</dt><dd class="mono">${wd(it.venc)}, ${br(it.venc)} ${pill(effStatus(it))}</dd><dt>Regra</dt><dd>${h(ob.periodicidade ? regraTexto(ob) : "")}</dd><dt>CNPJ</dt><dd class="mono">${h(fmtCNPJ(c.cnpj))}</dd><dt>Entrega para</dt><dd>${h((c.emails || []).join(", ") || "sem e-mail cadastrado")}</dd></dl>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+  <label class="f">Status<select id="d-status" data-act="d-field" data-k="status">${Object.entries(STATUS).filter(([k]) => k !== "atrasada").map(([k, l]) => `<option value="${k}" ${it.status === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+  <label class="f">Responsável<select id="d-resp" data-act="d-field" data-k="resp"><option value="">—</option>${resps.map(r => `<option ${it.resp === r ? "selected" : ""}>${h(r)}</option>`).join("")}</select></label>
+  <label class="f">Vencimento<input type="date" id="d-venc" value="${h(it.venc)}" data-act="d-field" data-k="venc"></label>
+  <label class="f">Valor da guia (R$)<input type="number" id="d-valor" step="0.01" value="${h(it.valor ?? "")}" data-act="d-field" data-k="valor"></label>
+  </div>
+  <label class="f">Arquivo da guia<input type="text" id="d-arq" value="${h(it.arquivo || "")}" placeholder="nome do PDF na pasta de guias" data-act="d-field" data-k="arquivo"></label>
+  <div><p class="sectionlabel">Etapas</p>${(it.etapas || []).length ? `<div class="checks">${it.etapas.map((e, i) => `<label class="${e.ok ? "done" : ""}"><input type="checkbox" id="d-et-${i}" data-act="d-etapa" data-i="${i}" ${e.ok ? "checked" : ""}><span>${h(e.n)}</span>${e.em ? `<span class="muted mono" style="margin-left:auto;font-size:11px">${br(e.em)}</span>` : ""}</label>`).join("")}</div>` : `<p class="muted">Esta obrigação não tem processo vinculado.</p>`}</div>
+  <label class="f">Observações<textarea id="d-nota" rows="3" data-act="d-field" data-k="nota">${h(it.nota || "")}</textarea></label>
+  ${envs.length ? `<div><p class="sectionlabel">Entregas ao cliente</p>${envs.map(x => protoCard(x.e)).join("")}</div>` : ""}
+  </div>
+  <footer><button class="btn" data-act="close">Cancelar</button><button class="btn primary" data-act="d-save">Salvar</button></footer></aside>`;
+}
+function protoCard(e) {
+  const st = envioStatus(e);
+  return `<div class="protocol"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span class="code">${h(e.protocolo)}</span>${st === "ciente" ? `<span class="stamp">Ciente</span>` : pill(st)}</div>
+  <div class="muted">Enviado ${brDH(e.enviadoEm)} para ${h((e.para || []).join(", "))}</div>
+  ${e.cienteEm ? `<div>Ciência em <b>${brDH(e.cienteEm)}</b>${e.cienteDe ? ` por ${h(e.cienteDe)}` : ""}${e.cienteVia ? ` · ${h(e.cienteVia)}` : ""}</div>` : ""}
+  ${e.resposta ? `<blockquote class="resp">${h(e.resposta)}</blockquote>` : ""}
+  ${(e.cobrancas || []).length ? `<div class="muted">Cobranças: ${e.cobrancas.map(brDH).join(", ")}</div>` : ""}</div>`;
+}
+function drawerProto(o) {
+  const t = byId(S.tarefas, o.t); if (!t) return ""; const e = (t.envios || [])[o.i]; if (!e) return "";
+  const c = byId(S.clientes, t.clienteId) || { nome: t.clienteNome || "" };
+  const itens = (e.itens || []).map(id => ({ ob: byId(S.obrig, id) || { sigla: id, nome: "" }, it: (t.itens || {})[id] || {} }));
+  return `<div class="scrim" data-act="close"></div><aside class="drawer" role="dialog" aria-label="Protocolo">
+  <header><div><div class="sectionlabel">${h(c.nome)} · ${compBR(t.competencia)}</div><h2 class="mono">${h(e.protocolo)}</h2></div><button class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body">${protoCard(e)}
+  <dl class="kv"><dt>Assunto</dt><dd>${h(e.assunto || "")}</dd><dt>Anexos</dt><dd>${h((e.anexos || []).join(", ") || "—")}</dd></dl>
+  <div><p class="sectionlabel">Guias neste envio</p><table><tbody>${itens.map(x => `<tr><td><span class="sigla">${h(x.ob.sigla)}</span> ${h(x.ob.nome)}</td><td class="mono">${br(x.it.venc)}</td><td class="mono">${money(x.it.valor)}</td></tr>`).join("")}</tbody></table></div>
+  ${e.status !== "ciente" ? `<div><p class="sectionlabel">Registrar ciência manualmente</p><p class="hint">Use quando o cliente confirmou por telefone ou WhatsApp.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><label class="f">Data<input type="date" id="p-data" value="${hoje}"></label><label class="f">Confirmado por<input type="text" id="p-quem" placeholder="nome ou e-mail"></label></div>
+  <label class="f" style="margin-top:8px">Como<input type="text" id="p-via" value="Confirmação manual"></label></div>` : ""}
+  </div><footer><button class="btn" data-act="close">Fechar</button>${e.status !== "ciente" ? `<button class="btn primary" data-act="p-ciente">Registrar ciência</button>` : `<button class="btn" data-act="p-reabrir">Desfazer ciência</button>`}</footer></aside>`;
+}
+function modalCli(o) {
+  const c = o.draft;
+  return `<div class="scrim" data-act="close"></div><form class="modal" role="dialog" aria-label="Cliente" data-act="cli-save">
+  <header><h2>${o.id ? "Editar cliente" : "Novo cliente"}</h2><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body">
+  <label class="f full">Razão social / nome<input type="text" id="c-nome" required value="${h(c.nome || "")}"></label>
+  <label class="f">CNPJ ou CPF<input type="text" id="c-cnpj" value="${h(fmtCNPJ(c.cnpj))}"></label>
+  <label class="f">Regime<select id="c-regime">${REGIMES.map(r => `<option ${c.regime === r ? "selected" : ""}>${r}</option>`).join("")}</select></label>
+  <label class="f">Responsável<input type="text" id="c-resp" list="dl-resp" value="${h(c.resp || "")}"><datalist id="dl-resp">${(S.cfg.responsaveis || []).map(r => `<option value="${h(r)}">`).join("")}</datalist></label>
+  <label class="f">UF / Município<input type="text" id="c-local" value="${h(c.local || "")}" placeholder="SP / São Paulo"></label>
+  <label class="f full">E-mails para entrega das guias (separe por vírgula)<input type="text" id="c-emails" value="${h((c.emails || []).join(", "))}"></label>
+  <div class="full"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><p class="sectionlabel" style="margin:0">Obrigações deste cliente</p><button type="button" class="btn small" data-act="c-sugerir">Marcar as do regime</button></div>
+  <div class="chipgrid">${[...S.obrig].sort((a, b) => a.sigla.localeCompare(b.sigla)).map(ob => `<label><input type="checkbox" name="c-ob" id="c-ob-${h(ob.id)}" value="${h(ob.id)}" ${(c.obrigacoes || []).includes(ob.id) ? "checked" : ""}><span><b class="mono">${h(ob.sigla)}</b> <span class="muted">${h(ob.esfera)}</span></span></label>`).join("") || `<span class="muted">Cadastre obrigações no catálogo primeiro.</span>`}</div></div>
+  <label class="f full">Observações<textarea id="c-obs" rows="2">${h(c.obs || "")}</textarea></label>
+  <label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="c-ativo" ${c.ativo !== false ? "checked" : ""}> Cliente ativo (entra na geração de tarefas)</label>
+  </div>
+  <footer><span>${o.id ? (o.confirmDel ? `<button type="button" class="btn" data-act="c-del-yes" style="color:var(--bad)">Confirmar exclusão</button> <button type="button" class="btn ghost" data-act="c-del-no">Manter</button>` : `<button type="button" class="btn ghost" data-act="c-del" style="color:var(--bad)">Excluir cliente</button>`) : ""}</span>
+  <span style="display:flex;gap:8px"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary">Salvar</button></span></footer></form>`;
+}
+function modalOb(o) {
+  const b = o.draft;
+  return `<div class="scrim" data-act="close"></div><form class="modal" role="dialog" aria-label="Obrigação" data-act="ob-save">
+  <header><h2>${o.id ? "Editar obrigação" : "Nova obrigação"}</h2><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body">
+  <label class="f">Sigla<input type="text" id="o-sigla" required value="${h(b.sigla || "")}" data-act="o-f" data-k="sigla"></label>
+  <label class="f">Nome<input type="text" id="o-nome" required value="${h(b.nome || "")}" data-act="o-f" data-k="nome"></label>
+  <label class="f">Esfera<select id="o-esfera" data-act="o-f" data-k="esfera">${ESFERAS.map(e => `<option ${b.esfera === e ? "selected" : ""}>${e}</option>`).join("")}</select></label>
+  <label class="f">Tipo<select id="o-tipo" data-act="o-f" data-k="tipo"><option value="guia" ${b.tipo === "guia" ? "selected" : ""}>Guia de pagamento</option><option value="declaracao" ${b.tipo === "declaracao" ? "selected" : ""}>Declaração / entrega</option><option value="rotina" ${b.tipo === "rotina" ? "selected" : ""}>Rotina interna</option></select></label>
+  <label class="f">Periodicidade<select id="o-per" data-act="o-f" data-k="periodicidade"><option value="mensal" ${b.periodicidade === "mensal" ? "selected" : ""}>Mensal</option><option value="trimestral" ${b.periodicidade === "trimestral" ? "selected" : ""}>Trimestral (mar, jun, set, dez)</option><option value="anual" ${b.periodicidade === "anual" ? "selected" : ""}>Anual</option></select></label>
+  <label class="f">Mês-base (anual)<input type="number" id="o-mb" min="1" max="12" value="${h(b.mesBase || 12)}" data-act="o-f" data-k="mesBase" ${b.periodicidade !== "anual" ? "disabled" : ""}></label>
+  <label class="f">Regra<select id="o-regra" data-act="o-f" data-k="regra"><option value="dia_fixo" ${b.regra === "dia_fixo" ? "selected" : ""}>Dia fixo do mês</option><option value="dia_util" ${b.regra === "dia_util" ? "selected" : ""}>N-ésimo dia útil</option><option value="ultimo_util" ${b.regra === "ultimo_util" ? "selected" : ""}>Último dia útil</option></select></label>
+  <label class="f">Dia<input type="number" id="o-dia" min="1" max="31" value="${h(b.dia || 20)}" data-act="o-f" data-k="dia" ${b.regra === "ultimo_util" ? "disabled" : ""}></label>
+  <label class="f">Meses após a competência<input type="number" id="o-off" min="0" max="12" value="${h(b.mesOffset ?? 1)}" data-act="o-f" data-k="mesOffset"></label>
+  <label class="f">Se cair em dia não útil<select id="o-aj" data-act="o-f" data-k="ajuste" ${b.regra !== "dia_fixo" ? "disabled" : ""}><option value="antecipa" ${b.ajuste === "antecipa" ? "selected" : ""}>Antecipa</option><option value="posterga" ${b.ajuste === "posterga" ? "selected" : ""}>Prorroga</option><option value="nenhum" ${b.ajuste === "nenhum" ? "selected" : ""}>Mantém</option></select></label>
+  <label class="f">Lembrar com quantos dias<input type="number" id="o-lemb" min="0" max="60" value="${h(b.lembrete ?? 5)}" data-act="o-f" data-k="lembrete"></label>
+  <label class="f">Processo<select id="o-proc" data-act="o-f" data-k="processo"><option value="">— sem processo —</option>${S.proc.map(p => `<option value="${h(p.id)}" ${b.processo === p.id ? "selected" : ""}>${h(p.nome)}</option>`).join("")}</select></label>
+  <label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="o-envia" data-act="o-f" data-k="enviaCliente" ${b.enviaCliente ? "checked" : ""}> Enviar ao cliente por e-mail com protocolo</label>
+  <div class="full"><p class="sectionlabel">Regimes que normalmente têm esta obrigação</p><div class="chipgrid">${REGIMES.map(r => `<label><input type="checkbox" name="o-reg" id="o-reg-${h(r.replace(/\W/g, ""))}" value="${h(r)}" data-act="o-reg" ${(b.regimes || []).includes(r) ? "checked" : ""}>${h(r)}</label>`).join("")}</div></div>
+  <div class="full protocol"><span class="sectionlabel" style="margin:0">Prévia</span><span id="o-prev">${previaOb(b)}</span></div>
+  </div>
+  <footer><span>${o.id ? (o.confirmDel ? `<button type="button" class="btn" data-act="o-del-yes" style="color:var(--bad)">Confirmar exclusão</button> <button type="button" class="btn ghost" data-act="o-del-no">Manter</button>` : `<button type="button" class="btn ghost" data-act="o-del" style="color:var(--bad)">Excluir</button>`) : ""}</span>
+  <span style="display:flex;gap:8px"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary">Salvar</button></span></footer></form>`;
+}
+function previaOb(b) {
+  const prev = Venc.calcular(b, S.comp, feriados());
+  return `${h(regraTexto(b))}. Competência ${compBR(S.comp)}: ${prev ? `<b class="mono">${wd(prev)}, ${br(prev)}</b>` : "não se aplica neste mês"}.`;
+}
+function modalPr(o) {
+  const p = o.draft;
+  return `<div class="scrim" data-act="close"></div><form class="modal" role="dialog" aria-label="Processo" data-act="pr-save">
+  <header><h2>${o.id ? "Editar processo" : "Novo processo"}</h2><button type="button" class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body"><label class="f full">Nome<input type="text" id="p-nome" required value="${h(p.nome || "")}"></label>
+  <label class="f full">Etapas (uma por linha, na ordem)<textarea id="p-etapas" rows="8">${h((p.etapas || []).join("\n"))}</textarea><span class="hint">Tarefas já geradas mantêm o checklist antigo. As próximas competências usam este.</span></label></div>
+  <footer><span>${o.id ? `<button type="button" class="btn ghost" data-act="pr-del" style="color:var(--bad)">${o.confirmDel ? "Confirmar exclusão" : "Excluir"}</button>` : ""}</span>
+  <span style="display:flex;gap:8px"><button type="button" class="btn" data-act="close">Cancelar</button><button type="submit" class="btn primary">Salvar</button></span></footer></form>`;
+}
+function planoGeracao(comp) {
+  const plano = [];
+  for (const c of S.clientes) {
+    if (c.ativo === false) continue;
+    const itens = {};
+    for (const obId of c.obrigacoes || []) {
+      const ob = byId(S.obrig, obId); if (!ob) continue;
+      const venc = Venc.calcular(ob, comp, feriados()); if (!venc) continue;
+      const pr = byId(S.proc, ob.processo);
+      itens[obId] = { venc, status: "pendente", resp: c.resp || "", etapas: (pr?.etapas || []).map(n => ({ n, ok: false })) };
+    }
+    if (!Object.keys(itens).length) continue;
+    const id = comp + "_" + c.id, ex = byId(S.tarefas, id);
+    const novos = Object.fromEntries(Object.entries(itens).filter(([k]) => !(ex && ex.itens && ex.itens[k])));
+    plano.push({ id, c, novos, existe: !!ex, n: Object.keys(novos).length });
+  }
+  return plano;
+}
+function modalGerar(o) {
+  const plano = planoGeracao(S.comp), total = plano.reduce((s, p) => s + p.n, 0);
+  return `<div class="scrim" data-act="close"></div><div class="modal" role="dialog" aria-label="Gerar tarefas">
+  <header><h2>Gerar tarefas de ${compBR(S.comp)}</h2><button class="x" data-act="close" aria-label="Fechar">×</button></header>
+  <div class="body"><div class="full">${total ? `<p>Serão criadas <b>${total}</b> tarefas para <b>${plano.filter(p => p.n).length}</b> clientes ativos, com vencimentos calculados pelo catálogo e pelos feriados cadastrados. Tarefas que já existem nesta competência ficam como estão.</p>`
+    : `<p>Nada a gerar: todas as obrigações dos clientes ativos já têm tarefa em ${compBR(S.comp)}, ou nenhuma se aplica a este mês.</p>`}
+  ${o.progress ? `<p class="mono">${o.progress}</p>` : ""}</div></div>
+  <footer><span></span><span style="display:flex;gap:8px"><button class="btn" data-act="close">Cancelar</button>${total ? `<button class="btn primary" data-act="gerar-ok" ${o.running ? "disabled" : ""}>Gerar ${total} tarefas</button>` : ""}</span></footer></div>`;
+}
+
+// ---------- ações ----------
+let toastT;
+function toast(msg) {
+  let el = document.querySelector(".toast"); if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+  el.textContent = msg; clearTimeout(toastT); toastT = setTimeout(() => el.remove(), 3200);
+}
+function erro(e) {
+  console.error(e);
+  const code = e && e.code;
+  toast(code === "invalid_argument" ? "Você não tem permissão para alterar este painel." : code === "quota_exceeded" ? "O banco do painel está cheio. Arquive competências antigas." : "Não foi possível salvar. Tente de novo.");
+}
+async function write(fn) { if (!S.db) { toast("Banco indisponível nesta visualização."); return false; } try { await fn(S.db); return true; } catch (e) { erro(e); return false; } }
+const clone = x => JSON.parse(JSON.stringify(x || {}));
+const openOv = o => { S.overlay = o; renderOverlay(); };
+const closeOv = () => { S.overlay = null; renderOverlay(); };
+
+document.addEventListener("click", async ev => {
+  const el = ev.target.closest("[data-act]"); if (!el) return;
+  const a = el.dataset.act;
+  if (["INPUT", "SELECT", "TEXTAREA", "FORM"].includes(el.tagName) && !["d-etapa", "o-reg"].includes(a)) return;
+  if (a === "nav") { S.view = el.dataset.v; S.overlay = null; render(); }
+  else if (a === "kpi") {
+    const k = el.dataset.k;
+    if (k === "aguard" || k === "cientes") { S.view = "protocolos"; S.protoF = k === "aguard" ? "abertos" : "cientes"; }
+    else S.kpi = S.kpi === k ? null : k;
+    render();
+  }
+  else if (a === "mode") { S.mode = el.dataset.m; render(); }
+  else if (a === "limpar") { S.f = { q: "", resp: "", esfera: "", status: "" }; S.kpi = null; render(); }
+  else if (a === "pf") { S.protoF = el.dataset.k; render(); }
+  else if (a === "close") closeOv();
+  else if (a === "item") { const t = byId(S.tarefas, el.dataset.t); if (t) openOv({ kind: "item", t: t.id, o: el.dataset.o, draft: clone(t.itens[el.dataset.o]) }); }
+  else if (a === "d-etapa") {
+    const d = S.overlay.draft, i = +el.dataset.i; d.etapas[i].ok = el.checked; d.etapas[i].em = el.checked ? hoje : null;
+    const done = d.etapas.filter(e => e.ok).length;
+    if (done === d.etapas.length && ["pendente", "andamento"].includes(d.status)) d.status = "concluida";
+    else if (done > 0 && d.status === "pendente") d.status = "andamento";
+    else if (done < d.etapas.length && d.status === "concluida") d.status = "andamento";
+    if (d.status === "concluida" && !d.concluidaEm) d.concluidaEm = hoje;
+    renderOverlay();
+  }
+  else if (a === "d-save") {
+    const o = S.overlay, d = o.draft; if (d.valor === "") d.valor = null; else if (d.valor != null) d.valor = +d.valor;
+    if (["concluida", "enviada", "ciente"].includes(d.status) && !d.concluidaEm) d.concluidaEm = hoje;
+    if (await write(db => db.doc("tarefas/" + o.t).update({ itens: { [o.o]: d } }))) { closeOv(); toast("Tarefa salva"); }
+  }
+  else if (a === "proto") openOv({ kind: "proto", t: el.dataset.t, i: +el.dataset.i });
+  else if (a === "p-ciente" || a === "p-reabrir") {
+    const o = S.overlay, t = byId(S.tarefas, o.t), envs = clone({ e: t.envios }).e, e = envs[o.i];
+    if (a === "p-ciente") {
+      const dt = document.getElementById("p-data").value || hoje;
+      Object.assign(e, { status: "ciente", cienteEm: dt + "T12:00:00", cienteDe: document.getElementById("p-quem").value.trim(), cienteVia: document.getElementById("p-via").value.trim() || "Confirmação manual" });
+    } else Object.assign(e, { status: "aguardando", cienteEm: null, cienteDe: null, cienteVia: null });
+    const itensUpd = {};
+    for (const id of e.itens || []) { const it = (t.itens || {})[id]; if (!it) continue; if (a === "p-ciente" && it.status === "enviada") itensUpd[id] = { status: "ciente" }; if (a === "p-reabrir" && it.status === "ciente") itensUpd[id] = { status: "enviada" }; }
+    if (await write(db => db.doc("tarefas/" + o.t).update({ envios: envs, ...(Object.keys(itensUpd).length ? { itens: itensUpd } : {}) }))) { toast(a === "p-ciente" ? "Ciência registrada" : "Ciência desfeita"); renderOverlay(); }
+  }
+  else if (a === "cli-new") openOv({ kind: "cli", id: null, draft: { regime: "Simples Nacional", ativo: true, obrigacoes: [] } });
+  else if (a === "cli-edit") { const c = byId(S.clientes, el.dataset.id); if (c) openOv({ kind: "cli", id: c.id, draft: clone(c) }); }
+  else if (a === "c-sugerir") {
+    const reg = document.getElementById("c-regime").value;
+    document.querySelectorAll('input[name="c-ob"]').forEach(cb => { const ob = byId(S.obrig, cb.value); if (ob && (ob.regimes || []).includes(reg)) cb.checked = true; });
+  }
+  else if (a === "c-del") { S.overlay.draft = lerCli(); S.overlay.confirmDel = true; renderOverlay(); }
+  else if (a === "c-del-no") { S.overlay.draft = lerCli(); S.overlay.confirmDel = false; renderOverlay(); }
+  else if (a === "c-del-yes") { const id = S.overlay.id; if (await write(db => db.doc("clientes/" + id).delete())) { closeOv(); toast("Cliente excluído"); } }
+  else if (a === "ob-new") openOv({ kind: "ob", id: null, draft: { esfera: "Federal", tipo: "guia", periodicidade: "mensal", regra: "dia_fixo", dia: 20, mesOffset: 1, ajuste: "antecipa", lembrete: 5, regimes: [], enviaCliente: true } });
+  else if (a === "ob-edit") { const o = byId(S.obrig, el.dataset.id); if (o) openOv({ kind: "ob", id: o.id, draft: clone(o) }); }
+  else if (a === "o-reg") { const d = S.overlay.draft; d.regimes = [...document.querySelectorAll('input[name="o-reg"]:checked')].map(x => x.value); }
+  else if (a === "o-del") { S.overlay.confirmDel = true; renderOverlay(); }
+  else if (a === "o-del-no") { S.overlay.confirmDel = false; renderOverlay(); }
+  else if (a === "o-del-yes") { const id = S.overlay.id; if (await write(db => db.doc("obrigacoes/" + id).delete())) { closeOv(); toast("Obrigação excluída"); } }
+  else if (a === "pr-new") openOv({ kind: "pr", id: null, draft: { nome: "", etapas: [] } });
+  else if (a === "pr-edit") { const p = byId(S.proc, el.dataset.id); if (p) openOv({ kind: "pr", id: p.id, draft: clone(p) }); }
+  else if (a === "pr-del") {
+    if (!S.overlay.confirmDel) { S.overlay.draft = { nome: document.getElementById("p-nome").value, etapas: document.getElementById("p-etapas").value.split("\n").map(s => s.trim()).filter(Boolean) }; S.overlay.confirmDel = true; renderOverlay(); return; }
+    const id = S.overlay.id; if (await write(db => db.doc("processos/" + id).delete())) { closeOv(); toast("Processo excluído"); }
+  }
+  else if (a === "gerar") openOv({ kind: "gerar" });
+  else if (a === "gerar-ok") {
+    const plano = planoGeracao(S.comp).filter(p => p.n); S.overlay.running = true; let i = 0;
+    for (const p of plano) {
+      i++; S.overlay.progress = `Gravando ${i} de ${plano.length}: ${p.c.nome}`; renderOverlay();
+      const ok = await write(db => p.existe
+        ? db.doc("tarefas/" + p.id).update({ itens: p.novos })
+        : db.doc("tarefas/" + p.id).set({ competencia: S.comp, clienteId: p.c.id, clienteNome: p.c.nome, criadoEm: new Date().toISOString(), itens: p.novos, envios: [] }));
+      if (!ok) break;
+    }
+    closeOv(); toast(`Tarefas de ${compBR(S.comp)} geradas`);
+  }
+});
+function lerCli() {
+  return {
+    ...(S.overlay.draft || {}),
+    nome: document.getElementById("c-nome").value.trim(), cnpj: document.getElementById("c-cnpj").value.replace(/\D/g, ""),
+    regime: document.getElementById("c-regime").value, resp: document.getElementById("c-resp").value.trim(), local: document.getElementById("c-local").value.trim(),
+    emails: document.getElementById("c-emails").value.split(/[,;\s]+/).map(s => s.trim()).filter(Boolean),
+    obrigacoes: [...document.querySelectorAll('input[name="c-ob"]:checked')].map(x => x.value),
+    obs: document.getElementById("c-obs").value.trim(), ativo: document.getElementById("c-ativo").checked
+  };
+}
+document.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const a = ev.target.dataset.act;
+  if (a === "cli-save") {
+    const c = lerCli(); delete c.id;
+    const bad = c.emails.filter(e => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
+    if (bad.length) { toast("E-mail inválido: " + bad.join(", ")); return; }
+    const id = S.overlay.id || S.db?.collection("clientes").doc().id;
+    if (await write(db => db.doc("clientes/" + id).set(c))) { closeOv(); toast("Cliente salvo"); }
+  } else if (a === "ob-save") {
+    const b = clone(S.overlay.draft); delete b.id;
+    b.dia = +b.dia || 1; b.mesOffset = +b.mesOffset || 0; b.lembrete = +b.lembrete || 0; b.mesBase = +b.mesBase || 12;
+    const id = S.overlay.id || (b.sigla || "ob").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Math.random().toString(36).slice(2, 6);
+    if (await write(db => db.doc("obrigacoes/" + id).set(b))) { closeOv(); toast("Obrigação salva"); }
+  } else if (a === "pr-save") {
+    const p = { nome: document.getElementById("p-nome").value.trim(), etapas: document.getElementById("p-etapas").value.split("\n").map(s => s.trim()).filter(Boolean) };
+    const id = S.overlay.id || S.db?.collection("processos").doc().id;
+    if (await write(db => db.doc("processos/" + id).set(p))) { closeOv(); toast("Processo salvo"); }
+  } else if (a === "cfg-save") {
+    const toIso = s => { s = s.trim(); const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); return m ? `${m[3]}-${m[2]}-${m[1]}` : /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : null; };
+    const cfg = {
+      ...S.cfg, nome: document.getElementById("cfg-nome").value.trim(), diasCobranca: +document.getElementById("cfg-dias").value || 3,
+      responsaveis: document.getElementById("cfg-resp").value.split("\n").map(s => s.trim()).filter(Boolean),
+      feriados: [...new Set(document.getElementById("cfg-fer").value.split("\n").map(toIso).filter(Boolean))].sort(),
+      modeloAssunto: document.getElementById("cfg-assunto").value, modeloCorpo: document.getElementById("cfg-corpo").value, assinatura: document.getElementById("cfg-ass").value
+    };
+    delete cfg.id;
+    if (await write(db => db.doc("config/escritorio").set(cfg))) toast("Configurações salvas");
+  }
+});
+function onField(ev) {
+  const el = ev.target, a = el.dataset.act; if (!a) return;
+  if (a === "d-field") { S.overlay.draft[el.dataset.k] = el.value; if (ev.type === "change" && el.tagName === "SELECT" && el.dataset.k === "status") renderOverlay(); }
+  else if (a === "o-f") {
+    const d = S.overlay.draft; d[el.dataset.k] = el.type === "checkbox" ? el.checked : el.type === "number" ? +el.value : el.value;
+    if (ev.type === "change" && el.tagName === "SELECT") renderOverlay();
+    else { const pv = document.getElementById("o-prev"); if (pv) pv.innerHTML = previaOb(d); }
+  }
+  else if (a === "fq" && ev.type === "input") { S.f.q = el.value; renderListOnly(); }
+  else if (ev.type !== "change") return;
+  else if (a === "comp") { S.comp = el.value; S.kpi = null; render(); }
+  else if (a === "newcomp") { if (/^\d{4}-\d{2}$/.test(el.value)) { S.comp = el.value; S.kpi = null; render(); } }
+  else if (a === "fresp") { S.f.resp = el.value; render(); }
+  else if (a === "fesf") { S.f.esfera = el.value; render(); }
+  else if (a === "fst") { S.f.status = el.value; render(); }
+}
+function renderListOnly() {
+  const pos = document.getElementById("f-q")?.selectionStart; render();
+  const q = document.getElementById("f-q"); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (e) { } }
+}
+document.addEventListener("input", onField);
+document.addEventListener("change", onField);
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && S.overlay) closeOv(); });
+
+// ---------- dados ----------
+let rt;
+function schedule() { clearTimeout(rt); rt = setTimeout(() => {
+  if (S.view === "config" && S.cfgRendered) { renderNav(); return; } if (!S.overlay || S.overlay.kind === "proto") render(); else renderNav(), rerenderMainKeepOverlay(); }, 30); }
+function rerenderMainKeepOverlay() {
+  // atualiza a área principal sem destruir o formulário aberto
+  const v = S.view; let html = v === "agenda" ? viewAgenda() : v === "protocolos" ? viewProtocolos() : v === "clientes" ? viewClientes() : v === "obrigacoes" ? viewObrig() : v === "processos" ? viewProc() : v === "guias" ? viewGuias() : null;
+  if (html != null) $main().innerHTML = html;
+}
+const docs = snap => snap.docs.map(d => ({ id: d.id, ...d.data() }));
+render();
+(async () => {
+  const db = window.claude ? await window.claude.use("db") : null;
+  if (!db) { S.offline = true; render(); return; }
+  S.db = db;
+  const sub = (name, key) => db.collection(name).onSnapshot(s => { S[key] = docs(s); S.loaded[name] = true; schedule(); }, e => { console.error(e); S.loaded[name] = true; schedule(); });
+  sub("clientes", "clientes"); sub("obrigacoes", "obrig"); sub("processos", "proc"); sub("tarefas", "tarefas");
+  db.doc("config/escritorio").onSnapshot(s => { S.cfg = s.exists ? s.data() : {}; S.loaded.cfg = true; schedule(); }, e => console.error(e));
+})();
+</script>
+<div id="overlay2"></div>
+<script src="/web/extra.js"></script>
+
+</body></html>

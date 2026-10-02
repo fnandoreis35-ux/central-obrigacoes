@@ -1,0 +1,74 @@
+name: Publicar programa Windows
+
+# Roda quando uma release é publicada no GitHub (ex.: tag v1.0.1).
+# Gera o pacote de atualização (app-X.Y.Z.zip + versao.json) e o instalador completo.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: programa
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Conferir versão
+        id: v
+        run: |
+          $v = (Get-Content app/VERSION -Raw).Trim()
+          $tag = "${{ github.event.release.tag_name }}".TrimStart("v")
+          if ($tag -and $tag -ne $v) { throw "A tag ($tag) é diferente de app/VERSION ($v)." }
+          $lm = (Select-String -Path launcher/launcher.py -Pattern '^LAUNCHER_VERSAO = (\d+)').Matches[0].Groups[1].Value
+          "versao=$v" >> $env:GITHUB_OUTPUT
+          "launcher=$lm" >> $env:GITHUB_OUTPUT
+
+      - name: Testes
+        run: |
+          pip install -r requirements.txt
+          python -m py_compile app/main.py app/servidor.py app/banco.py app/guias.py app/email_srv.py launcher/launcher.py
+
+      - name: Pacote de atualização
+        env:
+          NOTAS: ${{ github.event.release.body }}
+          VERSAO: ${{ steps.v.outputs.versao }}
+          LAUNCHER: ${{ steps.v.outputs.launcher }}
+        run: python ferramentas/pacote.py
+
+      - name: Executável
+        run: |
+          pip install pyinstaller
+          pyinstaller --noconfirm --windowed --name CentralObrigacoes --add-data "app;app_embutido/app" `
+            --collect-all webview --collect-all pythonnet --collect-all clr_loader --collect-submodules pypdf --collect-submodules openpyxl launcher/launcher.py
+
+      - name: Instalador
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DVersao=${{ steps.v.outputs.versao }}" instalador/CentralObrigacoes.iss
+
+      - name: Anexar na release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            programa/saida/versao.json
+            programa/saida/app-${{ steps.v.outputs.versao }}.zip
+            programa/saida/CentralObrigacoes-Instalador.exe
+
+      - name: Guardar arquivos (execução manual)
+        if: github.event_name != 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: central-obrigacoes
+          path: programa/saida/*

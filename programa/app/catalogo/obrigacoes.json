@@ -1,0 +1,419 @@
+{
+ "das-mei": {
+  "ajuste": "posterga",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DAS do MEI",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "MEI"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "DAS-MEI",
+  "tipo": "guia"
+ },
+ "das": {
+  "ajuste": "posterga",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "Simples Nacional",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Simples Nacional"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "DAS",
+  "tipo": "guia"
+ },
+ "dasn-simei": {
+  "ajuste": "nenhum",
+  "dia": 31,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 20,
+  "mesBase": 12,
+  "mesOffset": 5,
+  "nome": "Declaração anual do MEI",
+  "periodicidade": "anual",
+  "processo": "p-decl",
+  "regimes": [
+   "MEI"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "DASN-SIMEI",
+  "tipo": "declaracao"
+ },
+ "dctfweb": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DCTFWeb e MIT",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real",
+   "Simples Nacional"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "DCTFWeb",
+  "tipo": "declaracao"
+ },
+ "defis": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 20,
+  "mesBase": 12,
+  "mesOffset": 3,
+  "nome": "Declaração de Informações Socioeconômicas e Fiscais",
+  "periodicidade": "anual",
+  "processo": "p-decl",
+  "regimes": [
+   "Simples Nacional"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "DEFIS",
+  "tipo": "declaracao"
+ },
+ "destda": {
+  "ajuste": "posterga",
+  "dia": 28,
+  "enviaCliente": false,
+  "esfera": "Estadual",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DeSTDA (Simples, ST/DIFAL)",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Simples Nacional"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "DeSTDA",
+  "tipo": "declaracao"
+ },
+ "ecd": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 30,
+  "mesBase": 12,
+  "mesOffset": 6,
+  "nome": "Escrituração Contábil Digital",
+  "periodicidade": "anual",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "ECD",
+  "tipo": "declaracao"
+ },
+ "ecf": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 30,
+  "mesBase": 12,
+  "mesOffset": 7,
+  "nome": "Escrituração Contábil Fiscal",
+  "periodicidade": "anual",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "ECF",
+  "tipo": "declaracao"
+ },
+ "efd-contrib": {
+  "ajuste": "nenhum",
+  "dia": 10,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 2,
+  "nome": "EFD-Contribuições",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_util",
+  "sigla": "EFD-Contrib.",
+  "tipo": "declaracao"
+ },
+ "efd-icms": {
+  "ajuste": "antecipa",
+  "dia": 20,
+  "enviaCliente": false,
+  "esfera": "Estadual",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "SPED Fiscal",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "EFD ICMS/IPI",
+  "tipo": "declaracao"
+ },
+ "esocial": {
+  "ajuste": "antecipa",
+  "dia": 15,
+  "enviaCliente": false,
+  "esfera": "Trabalhista",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "Fechamento eSocial (S-1299)",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Simples Nacional",
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "eSocial",
+  "tipo": "declaracao"
+ },
+ "fgts": {
+  "ajuste": "antecipa",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Trabalhista",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "FGTS Digital (GFD)",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Simples Nacional",
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "FGTS",
+  "tipo": "guia"
+ },
+ "folha": {
+  "ajuste": "nenhum",
+  "dia": 5,
+  "enviaCliente": false,
+  "esfera": "Trabalhista",
+  "lembrete": 3,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "Folha de pagamento",
+  "periodicidade": "mensal",
+  "processo": "p-folha",
+  "regimes": [
+   "Simples Nacional",
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_util",
+  "sigla": "Folha",
+  "tipo": "rotina"
+ },
+ "icms": {
+  "ajuste": "antecipa",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Estadual",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "ICMS próprio",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "ICMS",
+  "tipo": "guia"
+ },
+ "inss": {
+  "ajuste": "antecipa",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Trabalhista",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DARF previdenciário (DCTFWeb)",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Simples Nacional",
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "INSS",
+  "tipo": "guia"
+ },
+ "irpj-csll": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 7,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DARF IRPJ e CSLL trimestral",
+  "periodicidade": "trimestral",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "IRPJ/CSLL",
+  "tipo": "guia"
+ },
+ "irpj-est": {
+  "ajuste": "nenhum",
+  "dia": 1,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 7,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "IRPJ e CSLL por estimativa mensal",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Real"
+  ],
+  "regra": "ultimo_util",
+  "sigla": "IRPJ/CSLL est.",
+  "tipo": "guia"
+ },
+ "irrf": {
+  "ajuste": "antecipa",
+  "dia": 20,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DARF IRRF sobre folha e serviços",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "IRRF",
+  "tipo": "guia"
+ },
+ "iss": {
+  "ajuste": "antecipa",
+  "dia": 10,
+  "enviaCliente": true,
+  "esfera": "Municipal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "ISS próprio",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "ISS",
+  "tipo": "guia"
+ },
+ "pgdas": {
+  "ajuste": "posterga",
+  "dia": 20,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "Apuração do Simples Nacional",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Simples Nacional"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "PGDAS-D",
+  "tipo": "declaracao"
+ },
+ "pis-cofins": {
+  "ajuste": "antecipa",
+  "dia": 25,
+  "enviaCliente": true,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "DARF PIS e COFINS",
+  "periodicidade": "mensal",
+  "processo": "p-guia",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "PIS/COFINS",
+  "tipo": "guia"
+ },
+ "reinf": {
+  "ajuste": "antecipa",
+  "dia": 15,
+  "enviaCliente": false,
+  "esfera": "Federal",
+  "lembrete": 5,
+  "mesBase": 12,
+  "mesOffset": 1,
+  "nome": "EFD-Reinf",
+  "periodicidade": "mensal",
+  "processo": "p-decl",
+  "regimes": [
+   "Lucro Presumido",
+   "Lucro Real",
+   "Simples Nacional"
+  ],
+  "regra": "dia_fixo",
+  "sigla": "EFD-Reinf",
+  "tipo": "declaracao"
+ }
+}
